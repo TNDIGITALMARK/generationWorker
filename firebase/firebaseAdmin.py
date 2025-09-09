@@ -1,6 +1,6 @@
 import os
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 from typing import Optional
 import logging
 
@@ -8,13 +8,14 @@ logger = logging.getLogger(__name__)
 
 _app: Optional[firebase_admin.App] = None
 _db: Optional[firestore.Client] = None
+_storage: Optional[storage.bucket] = None
 
-def initialize_firebase() -> tuple[firebase_admin.App, firestore.Client]:
+def initialize_firebase() -> tuple[firebase_admin.App, firestore.Client, storage.bucket]:
     """Initialize Firebase Admin SDK for Python service"""
-    global _app, _db
+    global _app, _db, _storage
     
     if _app:
-        return _app, _db
+        return _app, _db, _storage
     
     try:
         # Create credentials dictionary from environment variables
@@ -32,13 +33,16 @@ def initialize_firebase() -> tuple[firebase_admin.App, firestore.Client]:
             "universe_domain": os.getenv("FIREBASE_UNIVERSE_DOMAIN")
         }
         
-        # Initialize Firebase with credentials
+        # Initialize Firebase with credentials and storage bucket
         cred = credentials.Certificate(cred_dict)
-        _app = firebase_admin.initialize_app(cred)
+        _app = firebase_admin.initialize_app(cred, {
+            'storageBucket': os.getenv('FIREBASE_STORAGE_BUCKET')
+        })
         _db = firestore.client()
+        _storage = storage.bucket()
         
         logger.info("Firebase Admin initialized successfully in Python service")
-        return _app, _db
+        return _app, _db, _storage
         
     except Exception as e:
         logger.error(f"Failed to initialize Firebase: {e}")
@@ -70,3 +74,28 @@ def get_app() -> firebase_admin.App:
     if not _app:
         raise Exception("Firebase not initialized. Call initialize_firebase() first.")
     return _app
+
+def get_storage_bucket() -> storage.bucket:
+    """Get Firebase Storage bucket instance"""
+    if not _storage:
+        raise Exception("Firebase not initialized. Call initialize_firebase() first.")
+    return _storage
+
+async def upload_file_to_storage(file_data: bytes, destination_path: str, content_type: str = 'image/png') -> str:
+    """Upload file to Firebase Storage and return public URL"""
+    try:
+        bucket = get_storage_bucket()
+        blob = bucket.blob(destination_path)
+        
+        # Upload the file
+        blob.upload_from_string(file_data, content_type=content_type)
+        
+        # Make the blob publicly viewable
+        blob.make_public()
+        
+        # Return the public URL
+        return blob.public_url
+        
+    except Exception as e:
+        logger.error(f"Failed to upload file to storage: {e}")
+        raise e

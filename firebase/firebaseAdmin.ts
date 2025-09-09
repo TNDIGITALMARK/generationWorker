@@ -5,10 +5,11 @@ dotenv.config();
 
 let firebaseApp: admin.app.App;
 let db: admin.firestore.Firestore;
+let storage: admin.storage.Storage;
 
-export function initializeFirebase(): { app: admin.app.App; db: admin.firestore.Firestore } {
+export function initializeFirebase(): { app: admin.app.App; db: admin.firestore.Firestore; storage: admin.storage.Storage } {
   if (firebaseApp) {
-    return { app: firebaseApp, db };
+    return { app: firebaseApp, db, storage };
   }
 
   const serviceAccount = {
@@ -26,13 +27,15 @@ export function initializeFirebase(): { app: admin.app.App; db: admin.firestore.
   };
 
   firebaseApp = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount)
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET
   });
 
   db = admin.firestore();
+  storage = admin.storage();
   
   console.log('Firebase Admin initialized successfully');
-  return { app: firebaseApp, db };
+  return { app: firebaseApp, db, storage };
 }
 
 export async function testFirebaseConnection(): Promise<boolean> {
@@ -48,4 +51,4 @@ export async function testFirebaseConnection(): Promise<boolean> {
   }
 }
 
-export { db, firebaseApp };
+export { db, firebaseApp, storage };
