@@ -1,8 +1,15 @@
 node_modules/
 dist/
 .env
-*.json
 python_service/venv/
-ComfyUI/
+ComfyUI/venv/
+ComfyUI/models/
+ComfyUI/output/
+ComfyUI/temp/
 __pycache__/
 *.pyc
+
+# Keep important JSON files
+!package.json
+!tsconfig.json
+!python_service/text2image/workflows/*.json
