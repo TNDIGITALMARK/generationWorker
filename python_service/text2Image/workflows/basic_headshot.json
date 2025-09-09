@@ -1,0 +1,110 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "babesIllustriousBy_v50FP16.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "2": {
+    "inputs": {
+      "text": "professional headshot portrait, centered face, neutral background, studio lighting, sharp focus, high quality, 8k",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "System Prompt (Positive)"
+    }
+  },
+  "3": {
+    "inputs": {
+      "text": "{user_prompt}",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "User Prompt"
+    }
+  },
+  "4": {
+    "inputs": {
+      "conditioning_1": ["2", 0],
+      "conditioning_2": ["3", 0]
+    },
+    "class_type": "ConditioningCombine",
+    "_meta": {
+      "title": "Combine System + User Prompts"
+    }
+  },
+  "5": {
+    "inputs": {
+      "text": "blurry, bad quality, cropped, partial face, tilted, side profile, multiple people, busy background",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative Prompt"
+    }
+  },
+  "6": {
+    "inputs": {
+      "width": 832,
+      "height": 1216,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Headshot Dimensions"
+    }
+  },
+  "7": {
+    "inputs": {
+      "seed": 42,
+      "steps": 30,
+      "cfg": 7.5,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": ["1", 0],
+      "positive": ["4", 0],
+      "negative": ["5", 0],
+      "latent_image": ["6", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Sample"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": ["7", 0],
+      "vae": ["1", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode Image"
+    }
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": "headshot_{timestamp}",
+      "images": ["8", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Headshot"
+    }
+  },
+  "workflow_metadata": {
+    "name": "Basic Headshot Generator",
+    "description": "Simple text-to-image workflow optimized for professional headshots using Babes Illustrious model",
+    "version": "1.1",
+    "model": "babesIllustriousBy_v50FP16.safetensors",
+    "parameters": {
+      "user_prompt": "string - User's description to append to system prompt",
+      "seed": "integer - Random seed (default: 42)"
+    }
+  }
+}
