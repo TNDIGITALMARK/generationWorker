@@ -11,13 +11,13 @@ class WorkflowValidationService:
     
     def __init__(self, comfy_host: str = "localhost", comfy_port: int = 8188):
         self.comfy_url = f"http://{comfy_host}:{comfy_port}"
-        self.validate_endpoint = f"{self.comfy_url}/validate"
+        self.prompt_endpoint = f"{self.comfy_url}/prompt"  # Use /prompt for validation
         self.timeout = 30  # 30 second timeout
     
     async def validate_with_comfyui(self, workflow_data: Dict[str, Any]) -> Dict[str, Any]:
         """Validate workflow with ComfyUI validation endpoint"""
         try:
-            logger.info(f"Validating workflow with ComfyUI at {self.validate_endpoint}")
+            logger.info(f"Validating workflow with ComfyUI at {self.prompt_endpoint}")
             
             # Prepare validation payload
             validation_payload = {
@@ -50,7 +50,7 @@ class WorkflowValidationService:
         """Make synchronous validation request to ComfyUI"""
         try:
             response = requests.post(
-                self.validate_endpoint,
+                self.prompt_endpoint,
                 json=payload,
                 timeout=self.timeout,
                 headers={"Content-Type": "application/json"}
