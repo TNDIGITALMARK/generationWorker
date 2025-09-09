@@ -9,6 +9,9 @@ ComfyUI/temp/
 __pycache__/
 *.pyc
 
+# Firebase service account keys
+*firebase-adminsdk*.json
+
 # Keep important JSON files
 !package.json
 !tsconfig.json
