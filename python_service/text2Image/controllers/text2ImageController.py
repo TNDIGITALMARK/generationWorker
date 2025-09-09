@@ -2,7 +2,15 @@ from typing import Dict, Any, List
 import logging
 import os
 import json
-from ..services.callValidation import ValidationService
+import sys
+
+# Add the text2image path for imports
+current_dir = os.path.dirname(__file__)
+text2image_root = os.path.dirname(current_dir)
+if text2image_root not in sys.path:
+    sys.path.append(text2image_root)
+
+from services.callValidation import ValidationService
 
 logger = logging.getLogger(__name__)
 
