@@ -19,9 +19,44 @@ class WorkflowValidationService:
         try:
             logger.info(f"Validating workflow with ComfyUI at {self.prompt_endpoint}")
             
+            # Convert workflow nodes array to ComfyUI format (key-value pairs)
+            clean_workflow = {}
+            
+            # Check if workflow has nodes array
+            if "nodes" in workflow_data and isinstance(workflow_data["nodes"], list):
+                # Convert nodes array to dict with node IDs as keys
+                for node in workflow_data["nodes"]:
+                    if "id" in node:
+                        node_id = str(node["id"])
+                        # Create ComfyUI compatible node structure
+                        clean_workflow[node_id] = {
+                            "inputs": node.get("inputs", {}),
+                            "class_type": node.get("type", ""),
+                            "_meta": {
+                                "title": node.get("title", "")
+                            }
+                        }
+                        
+                        # Convert widget values to inputs format
+                        if "widgets_values" in node:
+                            # Map widget values to input names based on node type
+                            widgets_values = node["widgets_values"]
+                            if widgets_values:
+                                clean_workflow[node_id]["inputs"].update({
+                                    f"input_{i}": value for i, value in enumerate(widgets_values)
+                                })
+            else:
+                # Fallback: try original approach for different workflow formats
+                for key, value in workflow_data.items():
+                    if key.isdigit():
+                        clean_workflow[key] = value
+            
+            logger.info(f"Original workflow has {len(workflow_data.get('nodes', []))} nodes")
+            logger.info(f"Cleaned workflow keys: {list(clean_workflow.keys())}")
+            
             # Prepare validation payload
             validation_payload = {
-                "prompt": workflow_data
+                "prompt": clean_workflow
             }
             
             # Make async request to ComfyUI

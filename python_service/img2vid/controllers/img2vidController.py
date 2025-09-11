@@ -4,23 +4,24 @@ import os
 import json
 import sys
 
-# Add the text2image path for imports
+# Add the img2vid path for imports
 current_dir = os.path.dirname(__file__)
-text2image_root = os.path.dirname(current_dir)
-if text2image_root not in sys.path:
-    sys.path.append(text2image_root)
+img2vid_root = os.path.dirname(current_dir)
+services_path = os.path.join(img2vid_root, 'services')
+if services_path not in sys.path:
+    sys.path.insert(0, services_path)
 
-from services.callValidation import ValidationService
-from services.startJobInstantID import StartJobInstantIDService
+from callValidation import ValidationService
+from startImg2VidJob import StartImg2VidJobService
 
 logger = logging.getLogger(__name__)
 
-class Text2ImageController:
-    """Controller for text2Image service business logic"""
+class Img2VidController:
+    """Controller for img2vid service business logic"""
     
     def __init__(self):
         self.validation_service = ValidationService()
-        self.instantid_service = StartJobInstantIDService()
+        self.start_job_service = StartImg2VidJobService()
         self.workflows_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'workflows')
     
     async def validate_workflow(self, workflow_name: str) -> Dict[str, Any]:
@@ -93,23 +94,26 @@ class Text2ImageController:
             logger.error(f"Failed to get workflow info for {workflow_name}: {e}")
             raise e
     
-    async def start_instantid_job(self, reference_image: str, prompt: str, uid: str = None) -> Dict[str, Any]:
-        """Start InstantID job with reference image and prompt"""
+    async def start_job(self, file_name: str, prompt: str, uid: str = None) -> Dict[str, Any]:
+        """Start img2vid job"""
         try:
-            logger.info(f"Controller starting InstantID job: reference_image={reference_image}, uid={uid}")
+            logger.info(f"Starting img2vid job: file={file_name}, uid={uid}")
             
-            # Call the InstantID service
-            result = await self.instantid_service.start_job(reference_image, prompt, uid)
+            # Call start job service
+            result = await self.start_job_service.start_job(file_name, prompt, uid)
             
-            return result
+            return {
+                "job_id": result.get("job_id"),
+                "status": result.get("status", "pending"),
+                "file_name": file_name,
+                "prompt": prompt,
+                "uid": uid
+            }
             
         except Exception as e:
-            logger.error(f"InstantID job start failed: {e}")
+            logger.error(f"Start job failed: {e}")
             return {
                 "job_id": None,
                 "status": "failed",
-                "error": str(e),
-                "workflow_updated": False,
-                "workflow_validated": False,
-                "comfy_submitted": False
+                "error": str(e)
             }

@@ -1,0 +1,19 @@
+node_modules/
+python_service/venv/
+ComfyUI/venv/
+dist/
+*.log
+.git/
+.env
+.env.local
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+temp/
+output/
+# Don't exclude models - we want them in the image
+# models/
+# *.safetensors

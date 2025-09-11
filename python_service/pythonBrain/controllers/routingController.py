@@ -1,6 +1,7 @@
 from typing import Dict, Any
 import logging
 from .handlers.text2ImageHandler import Text2ImageHandler
+from .handlers.img2vidHandler import Img2VidHandler
 
 logger = logging.getLogger(__name__)
 
@@ -10,11 +11,14 @@ class RoutingController:
     def __init__(self):
         # Initialize service handlers
         self.text2image_handler = Text2ImageHandler()
+        self.img2vid_handler = Img2VidHandler()
         
         # Service mapping
         self.service_handlers = {
             "text2Image": self.text2image_handler,
             "text2image": self.text2image_handler,  # Accept both variations
+            "img2vid": self.img2vid_handler,
+            "img2Video": self.img2vid_handler,  # Accept both variations
         }
     
     async def route_request(self, service: str, task: str, data: Dict[str, Any]) -> Dict[str, Any]:
